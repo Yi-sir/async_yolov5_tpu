@@ -1,10 +1,10 @@
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <queue>
 #include <thread>
 #include <vector>
-#include <atomic>
 
 class Stream {
  public:
@@ -38,6 +38,11 @@ template <typename Func, typename... Args>
 void Stream::sendApi(Func f, Args&&... args) {
   auto api = std::make_shared<std::function<void()>>(
       std::bind(std::forward<Func>(f), std::forward<Args>(args)...));
+  // auto api = std::make_shared<std::function<void()>>(
+  //     [f = std::forward<Func>(f),
+  //      ... args = std::forward<Args>(args)]() mutable {
+  //       std::invoke(f, args...);
+  //     });
   while (1) {
     std::unique_lock<std::mutex> lock(mtx);
     if (apiQueue.size() >= maxQueueLen) {
